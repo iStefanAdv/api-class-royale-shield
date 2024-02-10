@@ -1,7 +1,7 @@
 [RO]
 
 Modulul pentru shield.royalehosting.net este conceput de catre echipa iSt-Panel.<br/>
-Este conceput pentru versiunea BETA 0.7.1. !
+Este conceput pentru versiunea BETA 0.7.1 !
 
 [EN]
 
