@@ -4,13 +4,12 @@
 //===========================================
 //         Api Shield RoyaleHosting        //
 //===========================================
-// Version: 1.0
+// Version: 1.5
 // Created by iSt-Panel (Petcu Mihai)
 // Email: developer@ist-panel.ro
 //===========================================
 // (c) iSt-Panel
 //===========================================
-
 
 class RoyalApi {
 
@@ -23,27 +22,6 @@ class RoyalApi {
     {
         $this->key = $key;
     }
-
-    /**************************************************
-     *                  Debug Cods
-     **************************************************/
-    public function ist_debug(string $text, bool $stop = false)
-    {
-        ?>
-            <pre>
-                <code>
-                    <?php print_r($text) ?>
-                </code>
-            </pre>
-        <?php
-
-        if ($stop) {
-            die;
-        }
-    }
-
-    /*************************************************
-    */
 
     public function jsonEncode(array $data)
     {
@@ -75,12 +53,12 @@ class RoyalApi {
 
         } else {
             $header = [
-                'token:' . $this->token
+                'Content-Type: application/json',
+                'token:' . $this->key
             ];
 
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-
         }
 
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
@@ -93,6 +71,9 @@ class RoyalApi {
         return $response;
     }
 
+    /*
+     * @deprecated
+     */
     public function loginShield(string $version)
     {
         $data = $this->callShield($version, 'auth/api', true);
