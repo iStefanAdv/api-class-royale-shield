@@ -35,7 +35,7 @@ class RoyaleApi {
         return json_decode($data);
     }
 
-    private function callShield(string $version, string $route, bool $post = false, bool $delete = false)
+    private function callShield(string $version, string $route, string $type = "GET")
     {
 
         $url = $this->apiUrl . "/". $version. "/". $route;
@@ -43,38 +43,41 @@ class RoyaleApi {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
 
-        if ($post) {
-            $post = $this->jsonEncode($this->post);
+        $header = [
+            'Content-Type: application/json',
+            'token:' . $this->key
+        ];
 
-            $header = [
-                'Content-Type: application/json',
-                'token:' . $this->key
-            ];
-
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-
-        } else {
-            $header = [
-                'Content-Type: application/json',
-                'token:' . $this->key
-            ];
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-
-            if ($delete) {
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        switch ($type) {
+            case "POST": {
+                $post = $this->jsonEncode($this->post);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+                break;
             }
-
+            case "GET": {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+                break;
+            }
+            case "DELETE": {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+                break;
+            }
+            case "PATCH": {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
+                break;
+            }
         }
 
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $data = curl_exec($ch);
         curl_close($ch);
-
+        
         $response = $this->jsonDecode($data);
 
         return $response;
@@ -85,7 +88,7 @@ class RoyaleApi {
      */
     public function loginShield(string $version): RoyaleApi
     {
-        $data = $this->callShield($version, 'auth/api', true);
+        $data = $this->callShield($version, 'auth/api', "POST");
         $this->token = $data->data->token;
         return $this;
     }
@@ -122,19 +125,19 @@ class RoyaleApi {
 
     public function ruteAddRule(string $version)
     {
-        $response = $this->callShield($version, "rules", true);
+        $response = $this->callShield($version, "rules", "POST");
         return $response;
     }
 
     public function deleteRule(string $version, int $ruleId)
     {
-        $response = $this->callShield($version, "/rules/". $ruleId, false, true);
+        $response = $this->callShield($version, "/rules/". $ruleId, "DELETE");
         return $response;
     }
 
     public function disableRule(string $version, int $ruleId)
     {
-        $response = $this->callShield($version, "rules/".$ruleId."/disable");
+        $response = $this->callShield($version, "rules/".$ruleId."/disable", "PATCH");
         return $response;
     }
 
