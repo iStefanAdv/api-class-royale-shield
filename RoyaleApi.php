@@ -77,7 +77,7 @@ class RoyaleApi {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $data = curl_exec($ch);
         curl_close($ch);
-        
+
         $response = $this->jsonDecode($data);
 
         return $response;
@@ -138,6 +138,12 @@ class RoyaleApi {
     public function disableRule(string $version, int $ruleId)
     {
         $response = $this->callShield($version, "rules/".$ruleId."/disable", "PATCH");
+        return $response;
+    }
+
+    public function enableRule(string $version, int $ruleId)
+    {
+        $response = $this->callShield($version, "rules/".$ruleId."/enable", "PATCH");
         return $response;
     }
 
