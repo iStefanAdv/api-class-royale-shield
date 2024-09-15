@@ -11,7 +11,7 @@
 // (c) iSt-Panel
 //===========================================
 
-class RoyalApi {
+class RoyaleApi {
 
     var $key = '';
     var $timeout = 30;
