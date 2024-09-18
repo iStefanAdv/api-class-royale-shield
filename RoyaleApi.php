@@ -123,7 +123,13 @@ class RoyaleApi {
         return $response;
     }
 
-    public function ruteAddRule(string $version)
+    public function listRuleInTheGroup(string $version, int $groupId)
+    {
+        $response = $this->callShield($version, "rules/group/". $groupId);
+        return $response;
+    }
+
+    public function routeAddRule(string $version)
     {
         $response = $this->callShield($version, "rules", "POST");
         return $response;
