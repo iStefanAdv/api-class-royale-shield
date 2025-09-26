@@ -4,7 +4,7 @@
 //===========================================
 //         Api Shield RoyaleHosting        //
 //===========================================
-// Version: 1.5
+// Version: 2.0
 // Created by iSt-Panel (Petcu Mihai)
 // Email: developer@ist-panel.ro
 //===========================================
@@ -17,6 +17,8 @@ class RoyaleApi {
     var $timeout = 30;
     var $apiUrl = 'https://shield.royalehosting.net/api';
     var $token = '';
+
+    var $post = [];
 
     public function __construct(string $key)
     {
@@ -33,7 +35,7 @@ class RoyaleApi {
         return json_decode($data);
     }
 
-    private function callShield(string $version, string $route, bool $post = false)
+    private function callShield(string $version, string $route, string $type = "GET")
     {
 
         $url = $this->apiUrl . "/". $version. "/". $route;
@@ -41,24 +43,34 @@ class RoyaleApi {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
 
-        if ($post) {
-            $postFields = [];
-            $postFields['key'] = $this->key;
+        $header = [
+            'Content-Type: application/json',
+            'token:' . $this->key
+        ];
 
-            $post = $this->jsonEncode($postFields);
-
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-
-        } else {
-            $header = [
-                'Content-Type: application/json',
-                'token:' . $this->key
-            ];
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        switch ($type) {
+            case "POST": {
+                $post = $this->jsonEncode($this->post);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+                break;
+            }
+            case "GET": {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+                break;
+            }
+            case "DELETE": {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+                break;
+            }
+            case "PATCH": {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
+                break;
+            }
         }
 
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
@@ -74,10 +86,16 @@ class RoyaleApi {
     /*
      * @deprecated
      */
-    public function loginShield(string $version)
+    public function loginShield(string $version): RoyaleApi
     {
-        $data = $this->callShield($version, 'auth/api', true);
+        $data = $this->callShield($version, 'auth/api', "POST");
         $this->token = $data->data->token;
+        return $this;
+    }
+
+    public function addPostVars(array $data): RoyaleApi
+    {
+        $this->post = $data;
         return $this;
     }
 
@@ -87,7 +105,7 @@ class RoyaleApi {
         return $response->data->attacks;
     }
 
-    public function getAttack(string $version, int $attackId)
+    public function getAttack(string $version, string $attackId)
     {
         $response = $this->callShield($version, "attacks/". $attackId);
         return $response;
@@ -96,6 +114,48 @@ class RoyaleApi {
     public function listIps(string $version)
     {
         $response = $this->callShield($version, "ips");
+        return $response;
+    }
+
+    public function listRules(string $version)
+    {
+        $response = $this->callShield($version, "rules?limit=200");
+        return $response;
+    }
+
+    public function listRuleInTheGroup(string $version, int $groupId)
+    {
+        $response = $this->callShield($version, "rules/group/". $groupId);
+        return $response;
+    }
+
+    public function routeAddRule(string $version)
+    {
+        $response = $this->callShield($version, "rules", "POST");
+        return $response;
+    }
+
+    public function deleteRule(string $version, int $ruleId)
+    {
+        $response = $this->callShield($version, "/rules/". $ruleId, "DELETE");
+        return $response;
+    }
+
+    public function disableRule(string $version, int $ruleId)
+    {
+        $response = $this->callShield($version, "rules/".$ruleId."/disable", "PATCH");
+        return $response;
+    }
+
+    public function enableRule(string $version, int $ruleId)
+    {
+        $response = $this->callShield($version, "rules/".$ruleId."/enable", "PATCH");
+        return $response;
+    }
+
+    public function traffic(string $version, string $unit = 'mbps', int $time = 3600)
+    {
+        $response = $this->callShield($version, "analytics/traffic?unit=".$unit."&time=". $time);
         return $response;
     }
 }
