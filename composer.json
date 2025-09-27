@@ -1,0 +1,14 @@
+{
+  "name": "istefanadv/api-class-royale-shield",
+  "description": "API client for RoyaleHosting Shield",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=7.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "iStefanAdv\\RoyaleShield\\": "src/"
+    }
+  }
+}
